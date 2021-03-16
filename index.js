@@ -42,5 +42,4 @@ mongoose.connect(
 // set up routes
 
 app.use("/auth", require("./routers/userRouter"));
-app.use("/customer", require("./routers/customerRouter"));
 app.use("/post", require("./routers/postRouter"));
