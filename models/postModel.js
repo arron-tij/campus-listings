@@ -7,6 +7,9 @@ const postSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "user",
   },
+  allowedBranches: [{ type: String }],
+  allowedYears: [{ type: String }],
+  allowedCollege: { type: String },
 });
 
 const Post = mongoose.model("post", postSchema);

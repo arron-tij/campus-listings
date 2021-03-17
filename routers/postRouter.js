@@ -2,19 +2,34 @@ const router = require("express").Router();
 const Post = require("../models/postModel");
 const auth = require("../middleware/auth");
 const User = require("../models/userModel");
+const { allBranches, allYears } = require("../constants");
 
 router.post("/", auth, async (req, res) => {
   try {
-    const { heading, description } = req.body;
+    const { heading, description, allowedBranches, allowedYears } = req.body;
     const postedBy = req.user;
+
+    allowedBranches.map((branch) => {
+      if (allBranches.indexOf(branch) === -1)
+        return res.status(400).json({ errorMessage: "Invalid branch" });
+    });
+
+    allowedYears.map((year) => {
+      if (allYears.indexOf(year) === -1)
+        return res.status(400).json({ errorMessage: "Invalid year" });
+    });
+    const userById = await User.findById(req.user);
+    const allowedCollege = userById.college;
     const newPost = new Post({
       heading,
       description,
       postedBy,
+      allowedBranches,
+      allowedYears,
+      allowedCollege,
     });
 
     const savedPost = await newPost.save();
-    const userById = await User.findById(req.user);
     userById.posts.push(savedPost);
     await userById.save();
     res.json(savedPost);
@@ -26,8 +41,19 @@ router.post("/", auth, async (req, res) => {
 
 router.get("/", auth, async (req, res) => {
   try {
-    const Posts = await Post.find();
-    res.json(Posts);
+    const allPosts = await Post.find();
+    const userById = await User.findById(req.user);
+    var visiblePosts = [];
+    allPosts.map((post) => {
+      if (
+        post.allowedBranches.indexOf(userById.branch) !== -1 &&
+        post.allowedYears.indexOf(userById.year) !== -1 &&
+        post.allowedCollege === userById.college
+      )
+        visiblePosts.push(post);
+    });
+
+    res.json(visiblePosts);
   } catch (err) {
     console.error(err);
     res.status(500).send();

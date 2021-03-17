@@ -2,11 +2,7 @@ const router = require("express").Router();
 const User = require("../models/userModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const collegeEmails = {
-  "itbhu.ac.in": "IIT-BHU",
-  "iitk.ac.in": "IIT-Kanpur",
-  "iitg.ac.in": "IIT-Guwahati",
-};
+const { collegeEmails } = require("../constants.js");
 
 // register
 
