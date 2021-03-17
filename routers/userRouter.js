@@ -2,16 +2,21 @@ const router = require("express").Router();
 const User = require("../models/userModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const collegeEmails = {
+  "itbhu.ac.in": "IIT-BHU",
+  "iitk.ac.in": "IIT-Kanpur",
+  "iitg.ac.in": "IIT-Guwahati",
+};
 
 // register
 
 router.post("/register", async (req, res) => {
   try {
-    const { email, password, college, year, branch } = req.body;
+    const { email, password, year, branch } = req.body;
 
     // validation
 
-    if (!email || !password || !college || !branch || !year)
+    if (!email || !password || !branch || !year)
       return res
         .status(400)
         .json({ errorMessage: "Please enter all required fields." });
@@ -25,6 +30,15 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({
         errorMessage: "Please enter correct year of study.",
       });
+
+    const collegeDomain = email.split("@")[1];
+
+    if (collegeEmails[collegeDomain] === undefined)
+      return res.status(400).json({
+        errorMessage: "Only institute email addresses allowed.",
+      });
+
+    const college = collegeEmails[collegeDomain];
 
     const existingUser = await User.findOne({ email });
     if (existingUser)

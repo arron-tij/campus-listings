@@ -14,7 +14,9 @@ router.post("/", auth, async (req, res) => {
     });
 
     const savedPost = await newPost.save();
-
+    const userById = await User.findById(req.user);
+    userById.posts.push(savedPost);
+    await userById.save();
     res.json(savedPost);
   } catch (err) {
     console.error(err);
@@ -26,6 +28,17 @@ router.get("/", auth, async (req, res) => {
   try {
     const Posts = await Post.find();
     res.json(Posts);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send();
+  }
+});
+
+router.get("/my", auth, async (req, res) => {
+  try {
+    // const user = await User.findById(req.user);
+    const user = await User.findById(req.user).populate("posts");
+    res.json(user.posts);
   } catch (err) {
     console.error(err);
     res.status(500).send();

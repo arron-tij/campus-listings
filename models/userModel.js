@@ -6,7 +6,8 @@ const userSchema = new mongoose.Schema({
   college: { type: String, required: true },
   year: { type: Number, required: true },
   branch: { type: String, required: true },
-  bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Bookmarks" }],
+  bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: "post" }],
+  posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "post" }],
 });
 
 const User = mongoose.model("user", userSchema);
