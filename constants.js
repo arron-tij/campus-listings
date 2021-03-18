@@ -6,4 +6,5 @@ const collegeEmails = {
 };
 const allBranches = ["ECE", "CSE", "MNC", "EEE"];
 const allYears = ["1", "2", "3", "4", "5"];
-module.exports = { collegeEmails, allBranches, allYears };
+const postLimit = 3;
+module.exports = { collegeEmails, allBranches, allYears, postLimit };

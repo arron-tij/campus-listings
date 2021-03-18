@@ -2,7 +2,7 @@ const router = require("express").Router();
 const User = require("../models/userModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { collegeEmails } = require("../constants.js");
+const { collegeEmails, postLimit } = require("../constants.js");
 
 // register
 
@@ -55,6 +55,7 @@ router.post("/register", async (req, res) => {
       college,
       year,
       branch,
+      postsRemaining: postLimit,
     });
 
     const savedUser = await newUser.save();

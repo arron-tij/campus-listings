@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   branch: { type: String, required: true },
   bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: "post" }],
   posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "post" }],
+  postsRemaining: { type: Number },
 });
 
 const User = mongoose.model("user", userSchema);

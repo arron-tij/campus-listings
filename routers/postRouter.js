@@ -2,7 +2,7 @@ const router = require("express").Router();
 const Post = require("../models/postModel");
 const auth = require("../middleware/auth");
 const User = require("../models/userModel");
-const { allBranches, allYears } = require("../constants");
+const { allBranches, allYears, postLimit } = require("../constants");
 
 router.post("/", auth, async (req, res) => {
   try {
@@ -19,6 +19,12 @@ router.post("/", auth, async (req, res) => {
         return res.status(400).json({ errorMessage: "Invalid year" });
     });
     const userById = await User.findById(req.user);
+    const remainingPosts = userById.postsRemaining;
+    if (remainingPosts == 0)
+      return res.status(400).json({
+        errorMessage: `Only ${postLimit} posts can be posted at once. Delete some to post more.`,
+      });
+
     const allowedCollege = userById.college;
     const newPost = new Post({
       heading,
@@ -31,6 +37,7 @@ router.post("/", auth, async (req, res) => {
 
     const savedPost = await newPost.save();
     userById.posts.push(savedPost._id);
+    userById.postsRemaining = remainingPosts - 1;
     await userById.save();
     res.json(savedPost);
   } catch (err) {
@@ -118,6 +125,8 @@ router.delete("/:id", auth, async (req, res) => {
       return res.status(401).json({ errorMessage: "Unauthorized" });
     await Post.findByIdAndDelete(req.params.id);
     const userById = await User.findById(req.user);
+    const remainingPosts = userById.postsRemaining;
+    userById.postsRemaining = remainingPosts + 1;
     var index = userById.posts.indexOf(req.params.id);
     if (index !== -1) await userById.posts.splice(index, 1);
     index = userById.bookmarks.indexOf(req.params.id);
