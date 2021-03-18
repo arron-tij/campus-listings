@@ -77,6 +77,10 @@ router.get("/my", auth, async (req, res) => {
   }
 });
 
+router.get("/test", auth, async (req, res) => {
+  res.send("Hello 1506");
+});
+
 router.get("/bookmark", auth, async (req, res) => {
   try {
     const user = await User.findById(req.user).populate("bookmarks");
