@@ -77,8 +77,8 @@ router.get("/my", auth, async (req, res) => {
   }
 });
 
-router.get("/test", async (req, res) => {
-  res.json("Hello 1506");
+router.get("/test", auth, async (req, res) => {
+  res.send("Hello 1506");
 });
 
 router.get("/bookmark", auth, async (req, res) => {
