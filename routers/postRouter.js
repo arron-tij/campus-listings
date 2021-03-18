@@ -30,7 +30,7 @@ router.post("/", auth, async (req, res) => {
     });
 
     const savedPost = await newPost.save();
-    userById.posts.push(savedPost);
+    userById.posts.push(savedPost._id);
     await userById.save();
     res.json(savedPost);
   } catch (err) {
@@ -82,11 +82,18 @@ router.get("/bookmark", auth, async (req, res) => {
 
 router.get("/bookmark/:id", auth, async (req, res) => {
   try {
-    const bookmarkedPost = await Post.findById(req.params.id);
     const userById = await User.findById(req.user);
-    userById.bookmarks.push(bookmarkedPost);
-    await userById.save();
-    res.json(bookmarkedPost);
+    const index = userById.bookmarks.indexOf(req.params.id);
+    if (index !== -1) {
+      await userById.bookmarks.splice(index, 1);
+      await userById.save();
+      res.json(userById);
+    } else {
+      const bookmarkedPost = await Post.findById(req.params.id);
+      userById.bookmarks.push(bookmarkedPost._id);
+      await userById.save();
+      res.json(userById);
+    }
   } catch (err) {
     console.error(err);
     res.status(500).send();
@@ -105,14 +112,18 @@ router.get("/:id", auth, async (req, res) => {
 
 router.delete("/:id", auth, async (req, res) => {
   try {
+    const postById = await Post.findById(req.params.id);
+    const author = postById.postedBy;
+    if (author != req.user)
+      return res.status(401).json({ errorMessage: "Unauthorized" });
     await Post.findByIdAndDelete(req.params.id);
-    const userFound = await User.findById(req.user);
-    var index = userFound.posts.indexOf(req.params.id);
-    if (index !== -1) await userFound.posts.splice(index, 1);
-    index = userFound.bookmarks.indexOf(req.params.id);
-    if (index !== -1) await userFound.bookmarks.splice(index, 1);
-    userFound.save();
-    res.json(userFound);
+    const userById = await User.findById(req.user);
+    var index = userById.posts.indexOf(req.params.id);
+    if (index !== -1) await userById.posts.splice(index, 1);
+    index = userById.bookmarks.indexOf(req.params.id);
+    if (index !== -1) await userById.bookmarks.splice(index, 1);
+    userById.save();
+    res.json(userById);
   } catch (err) {
     console.error(err);
     res.status(500).send();
