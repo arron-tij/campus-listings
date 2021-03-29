@@ -2,11 +2,35 @@ const router = require("express").Router();
 const Post = require("../models/postModel");
 const auth = require("../middleware/auth");
 const User = require("../models/userModel");
+const multer = require("multer");
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.API_KEY,
+  api_secret: process.env.API_SECRET,
+});
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "adposts",
+    allowedFormats: ["jpg", "png"],
+    transformation: [{ width: 500, height: 500, crop: "limit" }],
+  },
+});
+const parser = multer({ storage: storage });
+
 const { allBranches, allYears, postLimit } = require("../constants");
 
-router.post("/", auth, async (req, res) => {
+router.post("/", [auth, parser.single("image")], async (req, res) => {
   try {
-    const { heading, description, allowedBranches, allowedYears } = req.body;
+    // console.log(req.body);
+    // console.log(req.file);
+
+    const { heading, description } = req.body;
+    const allowedBranches = JSON.parse(req.body.allowedBranches);
+    const allowedYears = JSON.parse(req.body.allowedYears);
     const postedBy = req.user;
 
     allowedBranches.map((branch) => {
@@ -26,10 +50,12 @@ router.post("/", auth, async (req, res) => {
       });
 
     const allowedCollege = userById.college;
+
     const newPost = new Post({
       heading,
       description,
       postedBy,
+      img: { url: req.file.path, filename: req.file.filename },
       allowedBranches,
       allowedYears,
       allowedCollege,
@@ -132,6 +158,9 @@ router.delete("/:id", auth, async (req, res) => {
     index = userById.bookmarks.indexOf(req.params.id);
     if (index !== -1) await userById.bookmarks.splice(index, 1);
     userById.save();
+    cloudinary.uploader.destroy(postById.img.filename, function (err, result) {
+      console.log(result);
+    });
     res.json(userById);
   } catch (err) {
     console.error(err);

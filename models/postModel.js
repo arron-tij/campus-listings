@@ -8,6 +8,10 @@ const postSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
     },
+    img: {
+      url: { type: String },
+      filename: { type: String },
+    },
     allowedBranches: [{ type: String }],
     allowedYears: [{ type: String }],
     allowedCollege: { type: String },
